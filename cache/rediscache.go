@@ -1,10 +1,11 @@
 package cache
 
 import (
-	"fmt"
 	"time"
 
 	"encoding/json"
+
+	"fmt"
 
 	"github.com/go-redis/redis"
 )
@@ -16,9 +17,13 @@ type RedisCache struct {
 }
 
 // NewRedisCache will create new Redis cache instance
-func NewRedisCache(client *redis.Client, getData func(string) (interface{}, error)) Cache {
+func NewRedisCache(getData DataFunc, redisURL, redisPassword string, redisDB int) Cache {
 	return &RedisCache{
-		Client:  client,
+		Client: redis.NewClient(&redis.Options{
+			Addr:     redisURL,
+			Password: redisPassword,
+			DB:       redisDB,
+		}),
 		GetData: getData,
 	}
 }
@@ -28,13 +33,12 @@ func (r *RedisCache) GetDataFromCache(key string) (interface{}, error) {
 	var data []byte
 	var object Object
 	err := r.Client.Get(key).Scan(&data)
-
 	err = json.Unmarshal(data, &object)
-
-	fmt.Println(err, object)
 	if err != nil || time.Since(object.LastUpdatedTime) > time.Minute*5 {
 		return r.GetDataFromSource(key)
 	}
+	fmt.Println("From Cache")
+
 	return object.Data, nil
 }
 
@@ -48,12 +52,9 @@ func (r *RedisCache) GetDataFromSource(key string) (interface{}, error) {
 		Data:            data,
 		LastUpdatedTime: time.Now(),
 	}
-
 	// execute redis set in parallel
 	serialised, err := json.Marshal(object)
-	err = r.Client.Set(key, string(serialised), time.Minute*5).Err()
-	fmt.Println(err)
-
+	go r.Client.Set(key, string(serialised), time.Minute*5)
 	return data, nil
 
 }

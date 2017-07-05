@@ -13,3 +13,6 @@ type Object struct {
 	LastUpdatedTime time.Time
 	Data            interface{}
 }
+
+// DataFunc is the function type of data fetch function
+type DataFunc func(string) (interface{}, error)

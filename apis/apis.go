@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-redis/redis"
 	"github.com/gokultp/metar/cache"
 	"github.com/gokultp/metar/metar"
 	"github.com/gorilla/mux"
@@ -18,7 +17,7 @@ type API struct {
 }
 
 // NewAPI will creates a new API object
-func NewAPI(redisURL string) *API {
+func NewAPI(redisURL, redisPassword string, redisDB int) *API {
 	var api API
 
 	getData := func(key string) (interface{}, error) {
@@ -28,14 +27,7 @@ func NewAPI(redisURL string) *API {
 	if redisURL == "" {
 		api.Cache = cache.NewInMemCache(getData)
 	} else {
-
-		redisClient := redis.NewClient(&redis.Options{
-			Addr:     redisURL,
-			Password: "", // no password set
-			DB:       0,  // use default DB
-		})
-		api.Cache = cache.NewRedisCache(redisClient, getData)
-
+		api.Cache = cache.NewRedisCache(getData, redisURL, redisPassword, redisDB)
 	}
 	api.Router = mux.NewRouter()
 	return &api

@@ -7,11 +7,14 @@ import (
 )
 
 func main() {
-	RedisURL := os.Getenv("REDIS_URL")
-	Port := ":" + os.Getenv("PORT")
+	redisURL := os.Getenv("REDIS_URL")
+	redisPassword := "" //default
+	redisDB := 0        //default db
 
-	api := apis.NewAPI(RedisURL)
+	port := ":" + os.Getenv("PORT")
+
+	api := apis.NewAPI(redisURL, redisPassword, redisDB)
 	api.InitRoutes()
-	api.Listen(Port)
+	api.Listen(port)
 
 }

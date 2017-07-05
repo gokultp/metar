@@ -11,7 +11,7 @@ type InMemCache struct {
 }
 
 // NewInMemCache creates new InMemCache object
-func NewInMemCache(getData func(string) (interface{}, error)) Cache {
+func NewInMemCache(getData DataFunc) Cache {
 	return &InMemCache{
 		GetData: getData,
 		Data:    make(map[string]Object),
