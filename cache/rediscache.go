@@ -7,7 +7,7 @@ import (
 
 	"fmt"
 
-	"github.com/go-redis/redis"
+	"gopkg.in/redis.v3"
 )
 
 // RedisCache is caching mechanism using redis db
@@ -22,7 +22,7 @@ func NewRedisCache(getData DataFunc, redisURL, redisPassword string, redisDB int
 		Client: redis.NewClient(&redis.Options{
 			Addr:     redisURL,
 			Password: redisPassword,
-			DB:       redisDB,
+			DB:       int64(redisDB),
 		}),
 		GetData: getData,
 	}
